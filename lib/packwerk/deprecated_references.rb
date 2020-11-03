@@ -47,6 +47,20 @@ module Packwerk
       @new_entries[reference.constant.package.name] = package_violations
     end
 
+    def stale_violations?
+      deprecated_references.each_key do |package|
+        deprecated_references[package].each_key do |constant_name|
+          prepare_entries_for_dump
+          stale_violations = Array(deprecated_references.dig(package, constant_name, "files")) -
+          Array(@new_entries.dig(package, constant_name, "files"))
+          if stale_violations.present?
+            return true
+          end
+        end
+      end
+      false
+    end
+
     def dump
       if @new_entries.empty?
         File.delete(@filepath) if File.exist?(@filepath)

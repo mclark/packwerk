@@ -11,6 +11,7 @@ require "packwerk/inflector"
 require "packwerk/output_styles"
 require "packwerk/run_context"
 require "packwerk/updating_deprecated_references"
+require "packwerk/detect_stale_deprecated_references"
 
 module Packwerk
   class Cli
@@ -41,6 +42,8 @@ module Packwerk
         generate_configs
       when "check"
         check(args)
+      when "detect-stale-violations"
+        detect_stale_violations(args)
       when "update"
         update(args)
       when "update-deprecations"
@@ -175,6 +178,33 @@ module Packwerk
       @progress_formatter.finished(execution_time)
 
       all_offenses.empty?
+    end
+
+    def detect_stale_violations(paths)
+      detect_stale_deprecated_references = ::Packwerk::DetectStaleDeprecatedReferences.new(@configuration.root_path)
+      @run_context = Packwerk::RunContext.from_configuration(
+        @configuration,
+        reference_lister: detect_stale_deprecated_references
+      )
+
+      files = fetch_files_to_process(paths)
+
+      @progress_formatter.started(files)
+
+      all_offenses = T.let([], T.untyped)
+      execution_time = Benchmark.realtime do
+        all_offenses = files.flat_map do |path|
+          @run_context.file_processor.call(path).tap { |offenses| mark_progress(offenses) }
+        end
+      end
+
+      status = !detect_stale_deprecated_references.stale_violations?
+      msg = status ? "No stale violations detected" : "There were stale violations produced, please run packwerk update"
+
+      @out.puts
+      puts(msg)
+      @progress_formatter.finished(execution_time)
+      exit(status)
     end
 
     def fetch_files_to_process(paths)
