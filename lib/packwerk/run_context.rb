@@ -25,6 +25,7 @@ module Packwerk
       :inflector,
       :custom_associations,
       :checker_classes,
+      :package_defaults,
     )
 
     attr_accessor :reference_lister
@@ -44,6 +45,7 @@ module Packwerk
           inflector: inflector,
           custom_associations: configuration.custom_associations,
           reference_lister: reference_lister,
+          package_defaults: configuration.package_defaults
         )
       end
     end
@@ -55,7 +57,8 @@ module Packwerk
       inflector: nil,
       custom_associations: [],
       checker_classes: DEFAULT_CHECKERS,
-      reference_lister:
+      reference_lister:,
+      package_defaults: {}
     )
       @root_path = root_path
       @load_paths = load_paths
@@ -64,6 +67,7 @@ module Packwerk
       @custom_associations = custom_associations
       @checker_classes = checker_classes
       @reference_lister = reference_lister
+      @package_defaults = package_defaults
     end
 
     sig { params(file: String).returns(T::Array[T.nilable(::Packwerk::Offense)]) }
@@ -108,7 +112,11 @@ module Packwerk
 
     sig { returns(PackageSet) }
     def package_set
-      ::Packwerk::PackageSet.load_all_from(root_path, package_pathspec: package_paths)
+      ::Packwerk::PackageSet.load_all_from(
+        root_path,
+        package_pathspec: package_paths,
+        package_defaults: package_defaults
+      )
     end
 
     sig { returns(T::Array[Checker]) }

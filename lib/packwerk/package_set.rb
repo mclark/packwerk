@@ -12,12 +12,14 @@ module Packwerk
     PACKAGE_CONFIG_FILENAME = "package.yml"
 
     class << self
-      def load_all_from(root_path, package_pathspec: nil)
+      def load_all_from(root_path, package_pathspec: nil, package_defaults: {})
         package_paths = package_paths(root_path, package_pathspec || "**")
 
         packages = package_paths.map do |path|
           root_relative = path.dirname.relative_path_from(root_path)
-          Package.new(name: root_relative.to_s, config: YAML.load_file(path))
+          config = YAML.load_file(path) || {}
+          config = package_defaults.merge(config)
+          Package.new(name: root_relative.to_s, config: config)
         end
 
         create_root_package_if_none_in(packages)

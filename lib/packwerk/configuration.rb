@@ -32,7 +32,7 @@ module Packwerk
 
     attr_reader(
       :include, :exclude, :root_path, :package_paths, :custom_associations, :load_paths, :inflections_file,
-      :config_path,
+      :config_path, :package_defaults
     )
 
     def initialize(configs = {}, config_path: nil)
@@ -44,6 +44,7 @@ module Packwerk
       @custom_associations = configs["custom_associations"] || []
       @load_paths = configs["load_paths"] || []
       @inflections_file = File.expand_path(configs["inflections_file"] || "config/inflections.yml", @root_path)
+      @package_defaults = configs["package_defaults"] || {}
 
       @config_path = config_path
     end

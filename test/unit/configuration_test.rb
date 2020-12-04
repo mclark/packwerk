@@ -35,6 +35,9 @@ module Packwerk
         "load_paths" => ["app/models"],
         "custom_associations" => ["custom_association"],
         "inflections_file" => "custom_inflections.yml",
+        "package_defaults" => {
+          "public_path" => "custom/public_dir"
+        }
       }
       merge_into_app_yaml_file("packwerk.yml", configuration_hash)
 
@@ -47,6 +50,7 @@ module Packwerk
       assert_equal "**/*/", configuration.package_paths
       assert_equal ["custom_association"], configuration.custom_associations
       assert_equal to_app_path("custom_inflections.yml"), configuration.inflections_file
+      assert_equal({ "public_path" => "custom/public_dir" }, configuration.package_defaults)
     end
 
     test ".from_path falls back to some default config when no existing config exists" do
@@ -62,6 +66,7 @@ module Packwerk
       assert_equal "**/", configuration.package_paths
       assert_empty configuration.custom_associations
       assert_equal to_app_path("config/inflections.yml"), configuration.inflections_file
+      assert_empty configuration.package_defaults
     end
   end
 end

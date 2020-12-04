@@ -67,5 +67,16 @@ module Packwerk
       package_paths = PackageSet.package_paths("test/fixtures/skeleton", "**")
       refute_includes(package_paths, vendor_package_path)
     end
+
+    test ".load_all_from uses provided default package configs" do
+      package_set = PackageSet.load_all_from(
+        "test/fixtures/skeleton/",
+        package_defaults: { "public_path" => "custom/public_dir" }
+      )
+
+      package_set.all? do |package|
+        assert package.public_path.end_with?("custom/public_dir/")
+      end
+    end
   end
 end

@@ -106,7 +106,8 @@ module Packwerk
         load_paths: ["path"],
         package_paths: "**/",
         custom_associations: ["cached_belongs_to"],
-        inflections_file: "config/inflections.yml"
+        inflections_file: "config/inflections.yml",
+        package_defaults: {}
       )
       cli = ::Packwerk::Cli.new(configuration: configuration, out: string_io)
 
@@ -124,7 +125,8 @@ module Packwerk
         load_paths: ["path"],
         package_paths: "**/",
         custom_associations: ["cached_belongs_to"],
-        inflections_file: "config/inflections.yml"
+        inflections_file: "config/inflections.yml",
+        package_defaults: {}
       )
       cli = ::Packwerk::Cli.new(configuration: configuration, out: string_io)
 
