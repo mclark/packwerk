@@ -173,7 +173,7 @@ module Packwerk
     test "#add_entries and #dump adds constant violation to file in the appropriate format" do
       expected_output = {
         "buyers" => {
-          "::Checkout::Wallet" => { "violations" => ["privacy"], "files" => ["some/violated/path.rb"] },
+          "::Checkout::Wallet" => { "violations" => ["privacy"], "files" => { "some/violated/path.rb" => 1 } },
         },
       }
 
@@ -203,11 +203,11 @@ module Packwerk
     test "#dump dumps a deprecated references file with sorted and unique package, constant and file violations" do
       expected_output = {
         "a_package" => {
-          "::Checkout::Wallet" => { "violations" => ["privacy"], "files" => ["some/violated/path.rb"] },
+          "::Checkout::Wallet" => { "violations" => ["privacy"], "files" => { "some/violated/path.rb" => 1 } },
         },
         "another_package" => {
-          "::Abc::Constant" => { "violations" => ["dependency"], "files" => ["a/b/c.rb", "this/should/come/last.rb"] },
-          "::Checkout::Wallet" => { "violations" => ["dependency", "privacy"], "files" => ["some/violated/path.rb"] },
+          "::Abc::Constant" => { "violations" => ["dependency"], "files" => { "a/b/c.rb" => 2, "this/should/come/last.rb" => 1 } },
+          "::Checkout::Wallet" => { "violations" => ["dependency", "privacy"], "files" => { "some/violated/path.rb" => 2 } },
         },
       }
 

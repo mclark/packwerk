@@ -4,5 +4,5 @@ buyers:
     violations:
     - dependency
     files:
-    - orders/app/jobs/orders/sweepers/purge_old_document_rows_task.rb
-    - orders/app/models/orders/services/adjustment_engine.rb
+      orders/app/jobs/orders/sweepers/purge_old_document_rows_task.rb: 1
+      orders/app/models/orders/services/adjustment_engine.rb: 1

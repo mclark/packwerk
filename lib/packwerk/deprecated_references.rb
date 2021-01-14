@@ -29,7 +29,7 @@ module Packwerk
       violated_constants_found = deprecated_references.dig(reference.constant.package.name, reference.constant.name)
       return false unless violated_constants_found
 
-      violated_constant_in_file = violated_constants_found.fetch("files", []).include?(reference.relative_path)
+      violated_constant_in_file = violated_constants_found.fetch("files", {}).keys.include?(reference.relative_path)
       return false unless violated_constant_in_file
 
       violated_constants_found.fetch("violations", []).include?(violation_type.serialize)
@@ -43,8 +43,8 @@ module Packwerk
       entries_for_file["violations"] ||= []
       entries_for_file["violations"] << violation_type
 
-      entries_for_file["files"] ||= []
-      entries_for_file["files"] << reference.relative_path.to_s
+      entries_for_file["files"] ||= Hash.new(0)
+      entries_for_file["files"][reference.relative_path.to_s] += 1
 
       @new_entries[reference.constant.package.name] = package_violations
     end
@@ -57,9 +57,8 @@ module Packwerk
           new_entries_violation_types = @new_entries.dig(package, constant_name, "violations")
           return true if new_entries_violation_types.nil?
           if entries_for_file["violations"].all? { |type| new_entries_violation_types.include?(type) }
-            stale_violations =
-              entries_for_file["files"] - Array(@new_entries.dig(package, constant_name, "files"))
-            stale_violations.present?
+            files = @new_entries.dig(package, constant_name, "files")
+            files != entries_for_file["files"]
           else
             return true
           end
@@ -95,7 +94,6 @@ module Packwerk
       @new_entries.each do |package_name, package_violations|
         package_violations.each do |_, entries_for_file|
           entries_for_file["violations"].sort!.uniq!
-          entries_for_file["files"].sort!.uniq!
         end
         @new_entries[package_name] = package_violations.sort.to_h
       end
@@ -106,10 +104,24 @@ module Packwerk
     sig { returns(Hash) }
     def deprecated_references
       @deprecated_references ||= if File.exist?(@filepath)
-        YAML.load_file(@filepath) || {}
+        entries = YAML.load_file(@filepath) || {}
+        coerce_deprecations(entries)
       else
         {}
       end
+    end
+
+    sig { returns(Hash) }
+    def coerce_deprecations(entries)
+      entries.each do |package_name, package_violations|
+        package_violations.each do |_, entries_for_file|
+          next if entries_for_file["files"].is_a?(Hash)
+
+          files = entries_for_file["files"]
+          entries_for_file["files"] = files.inject(Hash.new) { |h, k| h[k] = 0; h }
+        end
+      end
+      entries
     end
   end
 end
